@@ -60,10 +60,20 @@ class MUCService(component.Service):
         response = self.iq('result', iq['id'])
         query = getattr(iq, 'query', None)
         if query is not None:
+            log.msg("disco query to %s" % iq['to'])
             query = response.addElement('query', DISCO_NS_INFO)
-            identity = domish.Element((None, 'identity'), attribs={'category': "conference", 'name': 'campfirenow.com interface MUC', 'type': "text"})
-            query.addChild(identity)
-            query.addChild(domish.Element((None, 'feature'), attribs={'var': NS_MUC}))
+            if '@' in iq['to']:
+                # Info for a room. Advertise "password protected" feature, to
+                # ensure that clients ask the user for the password.
+                response['from'] = iq['to']
+                identity = domish.Element((None, 'identity'), attribs={'category': "conference", 'name': 'campfire chat room', 'type': "text"})
+                query.addChild(identity)
+                query.addChild(domish.Element((None, 'feature'), attribs={'var': NS_MUC}))
+                query.addChild(domish.Element((None, 'feature'), attribs={'var': 'muc_passwordprotected'}))
+            else:
+                identity = domish.Element((None, 'identity'), attribs={'category': "conference", 'name': 'campfirenow.com interface MUC', 'type': "text"})
+                query.addChild(identity)
+                query.addChild(domish.Element((None, 'feature'), attribs={'var': NS_MUC}))
             response.send(iq['from'])
 
 
