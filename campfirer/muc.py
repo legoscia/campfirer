@@ -70,6 +70,7 @@ class MUCService(component.Service):
     def parseCampfireName(self, jid):
         room_parts = jid.user.split(".")
         roomname = ".".join(room_parts[1:])
+        roomname = roomname.replace("%20", " ")
         account = room_parts[0]    
         return (account, roomname)
         
